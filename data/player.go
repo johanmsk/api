@@ -66,7 +66,7 @@ func GetActivePlayers() (map[int]*models.Player, error) {
 		SELECT
 			p.id, p.first_name, p.last_name, p.vocal_name, p.nickname, p.slack_handle, p.color, p.profile_pic_url,
 			p.smartcard_uid, p.board_stream_url, p.board_stream_css, p.office_id, p.active, p.is_bot, p.is_placeholder,
-			p.created_at, p.updated_at, po.subtract_per_dart, po.show_checkout_guide
+			p.created_at, p.updated_at, po.subtract_per_dart, po.show_checkout_guide, po.preferred_voicepack
 		FROM player p
 			LEFT JOIN player_option po on po.player_id = p.id
 		WHERE active = 1`)
@@ -81,7 +81,7 @@ func GetActivePlayers() (map[int]*models.Player, error) {
 		p.PlayerOptions = new(models.PlayerOptions)
 		err := rows.Scan(&p.ID, &p.FirstName, &p.LastName, &p.VocalName, &p.Nickname, &p.SlackHandle, &p.Color, &p.ProfilePicURL,
 			&p.SmartcardUID, &p.BoardStreamURL, &p.BoardStreamCSS, &p.OfficeID, &p.IsActive, &p.IsBot, &p.IsPlaceholder, &p.CreatedAt,
-			&p.UpdatedAt, &p.PlayerOptions.SubtractPerDart, &p.PlayerOptions.ShowCheckoutGuide)
+			&p.UpdatedAt, &p.PlayerOptions.SubtractPerDart, &p.PlayerOptions.ShowCheckoutGuide, &p.PlayerOptions.PreferredVoicepack)
 		if err != nil {
 			return nil, err
 		}
@@ -110,7 +110,7 @@ func GetPlayer(id int) (*models.Player, error) {
 			p.id, p.first_name, p.last_name, p.vocal_name, p.nickname,
 			p.slack_handle, p.color, p.profile_pic_url, p.smartcard_uid, p.board_stream_url, p.board_stream_css,
 			p.office_id, p.active, p.is_bot, p.is_placeholder, p.created_at, p.updated_at, pe.current_elo, pe.tournament_elo,
-			po.subtract_per_dart, po.show_checkout_guide
+			po.subtract_per_dart, po.show_checkout_guide, po.preferred_voicepack
 		FROM player p
 			JOIN player_elo pe on pe.player_id = p.id
 			LEFT JOIN player_option po on po.player_id = p.id
@@ -118,7 +118,7 @@ func GetPlayer(id int) (*models.Player, error) {
 		Scan(&p.ID, &p.FirstName, &p.LastName, &p.VocalName, &p.Nickname, &p.SlackHandle,
 			&p.Color, &p.ProfilePicURL, &p.SmartcardUID, &p.BoardStreamURL, &p.BoardStreamCSS, &p.OfficeID, &p.IsActive,
 			&p.IsBot, &p.IsPlaceholder, &p.CreatedAt, &p.UpdatedAt, &p.CurrentElo, &p.TournamentElo, &p.PlayerOptions.SubtractPerDart,
-			&p.PlayerOptions.ShowCheckoutGuide)
+			&p.PlayerOptions.ShowCheckoutGuide, &p.PlayerOptions.PreferredVoicepack)
 	if err != nil {
 		return nil, err
 	}
@@ -223,8 +223,8 @@ func AddPlayer(player models.Player) error {
 	}
 
 	if player.PlayerOptions != nil {
-		_, err = tx.Exec(`INSERT INTO player_option (player_id, subtract_per_dart, show_checkout_guide) VALUES(?, ?, ?)`,
-			playerID, player.PlayerOptions.SubtractPerDart, player.PlayerOptions.ShowCheckoutGuide)
+		_, err = tx.Exec(`INSERT INTO player_option (player_id, subtract_per_dart, show_checkout_guide, preferred_voicepack) VALUES(?, ?, ?, ?)`,
+			playerID, player.PlayerOptions.SubtractPerDart, player.PlayerOptions.ShowCheckoutGuide, player.PlayerOptions.PreferredVoicepack)
 		if err != nil {
 			tx.Rollback()
 			return err
@@ -262,8 +262,8 @@ func UpdatePlayer(playerID int, player models.Player) error {
 			return err
 		}
 
-		_, err = tx.Exec(`INSERT INTO player_option (player_id, subtract_per_dart, show_checkout_guide) VALUES(?, ?, ?)`,
-			playerID, player.PlayerOptions.SubtractPerDart, player.PlayerOptions.ShowCheckoutGuide)
+		_, err = tx.Exec(`INSERT INTO player_option (player_id, subtract_per_dart, show_checkout_guide, preferred_voicepack) VALUES(?, ?, ?, ?)`,
+			playerID, player.PlayerOptions.SubtractPerDart, player.PlayerOptions.ShowCheckoutGuide, player.PlayerOptions.PreferredVoicepack)
 		if err != nil {
 			tx.Rollback()
 			return err
@@ -633,7 +633,8 @@ func GetPlayersInLeg(legID int) (map[int]*models.Player, error) {
 			p.is_bot,
 			p.is_placeholder,
 			po.subtract_per_dart,
-			po.show_checkout_guide
+			po.show_checkout_guide,
+			po.preferred_voicepack
 		FROM player2leg p2l
 			LEFT JOIN player p ON p.id = p2l.player_id
 			LEFT JOIN player_option po on po.player_id = p.id
@@ -649,7 +650,7 @@ func GetPlayersInLeg(legID int) (map[int]*models.Player, error) {
 		p.PlayerOptions = new(models.PlayerOptions)
 		err := rows.Scan(&p.ID, &p.FirstName, &p.LastName, &p.VocalName, &p.Nickname, &p.SlackHandle, &p.Color, &p.ProfilePicURL,
 			&p.SmartcardUID, &p.BoardStreamURL, &p.BoardStreamCSS, &p.OfficeID, &p.IsActive, &p.IsBot, &p.IsPlaceholder,
-			&p.PlayerOptions.SubtractPerDart, &p.PlayerOptions.ShowCheckoutGuide)
+			&p.PlayerOptions.SubtractPerDart, &p.PlayerOptions.ShowCheckoutGuide, &p.PlayerOptions.PreferredVoicepack)
 		if err != nil {
 			return nil, err
 		}

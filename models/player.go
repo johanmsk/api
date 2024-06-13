@@ -46,9 +46,10 @@ type PlayerStatistics struct {
 }
 
 type PlayerOptions struct {
-	PlayerID          null.Int  `json:"-"`
-	SubtractPerDart   null.Bool `json:"subtract_per_dart"`
-	ShowCheckoutGuide null.Bool `json:"show_checkout_guide"`
+	PlayerID           null.Int    `json:"-"`
+	SubtractPerDart    null.Bool   `json:"subtract_per_dart"`
+	ShowCheckoutGuide  null.Bool   `json:"show_checkout_guide"`
+	PreferredVoicepack null.String `json:"preferred_voicepack"`
 }
 
 // MarshalJSON will marshall the given object to JSON
